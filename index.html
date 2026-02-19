@@ -404,12 +404,13 @@ async function init(){
 
     /* ── Gastos Posteoz ── */
     const gp = await fetchSheet('Gastos Posteoz');
-    gp.slice(1).forEach(row=>{
+    gp.forEach(row=>{
       const mes=row.c?.[1]?.v, cat=row.c?.[2]?.v, mto=row.c?.[3]?.v;
-      if(mes&&cat&&mto){
-        if(!gastosMap[mes]) gastosMap[mes]=[];
-        gastosMap[mes].push({cat,monto:mto});
-      }
+      // saltar header y filas sin datos reales
+      if(!mes || !cat || mto==null) return;
+      if(cat==='CATEGORÍA' || mes==='MES') return;
+      if(!gastosMap[mes]) gastosMap[mes]=[];
+      gastosMap[mes].push({cat,monto:mto});
     });
 
     // Tabs gastos
@@ -449,24 +450,32 @@ async function init(){
 
     /* ── Ingresos Posteoz ── */
     const ip = await fetchSheet('Ingresos Posteoz');
-    let ingHTML='', totIngVal=0;
-    ip.slice(1).forEach((row,i)=>{
-      const rawFecha = row.c?.[0]?.v;
+    let ingHTML='', totIngVal=0, ingCount=0;
+    // columnas: 0=FECHA, 1=MES, 2=CLIENTE, 3=MONTO, 4=CONCEPTO
+    ip.forEach((row,i)=>{
       const mes  = row.c?.[1]?.v;
       const cli  = row.c?.[2]?.v;
       const mto  = row.c?.[3]?.v;
       const conc = row.c?.[4]?.v;
-      if(!cli&&!mto) return;
+      // saltar header y filas vacías
+      if(!cli || cli==='CLIENTE' || mto==null) return;
       totIngVal+=(mto||0);
-      const c=COLORS[i%COLORS.length];
-      let fechaStr='—';
-      if(rawFecha){
-        try{ fechaStr=new Date(rawFecha).toLocaleDateString('es-CL',{day:'numeric',month:'short'}); }catch(e){}
-      } else if(mes){ fechaStr=mes; }
+      const c=COLORS[ingCount%COLORS.length];
+      ingCount++;
+      // fecha: gviz la devuelve como string tipo "Date(2026,3,15)"
+      let fechaStr = mes||'—';
+      const rawFecha = row.c?.[0]?.v;
+      if(rawFecha && typeof rawFecha==='string' && rawFecha.includes('Date(')){
+        try{
+          const parts = rawFecha.replace('Date(','').replace(')','').split(',');
+          const d = new Date(+parts[0], +parts[1], +parts[2]);
+          fechaStr = d.toLocaleDateString('es-CL',{day:'numeric',month:'short'});
+        }catch(e){ fechaStr = mes||'—'; }
+      }
       ingHTML+=`<div class="row-item">
         <div class="row-ico" style="background:${c}18;color:${c}">💰</div>
         <div class="row-info">
-          <div class="row-name">${cli||'—'}</div>
+          <div class="row-name">${cli}</div>
           <div class="row-sub">${fechaStr}${conc?' · '+conc:''}</div>
         </div>
         <div class="row-amount" style="color:var(--gn)">${fmt(mto)}</div>
@@ -475,20 +484,22 @@ async function init(){
     document.getElementById('ingresos-list').innerHTML = ingHTML||'<div class="empty">Sin ingresos registrados</div>';
     document.getElementById('tot-ing').textContent     = fmtS(totIngVal);
 
-    /* ── Contenidos ── */
+    /* ── Contenidos — histórico de entregados ── */
     const ct = await fetchSheet('Contenidos');
-    let ctHTML='', totPiezas=0; const cliSet=new Set();
-    ct.slice(1).forEach((row,i)=>{
+    let ctHTML='', totPiezas=0, ctCount=0; const cliSet=new Set();
+    ct.forEach((row)=>{
       const cli  = row.c?.[0]?.v;
       const mes  = row.c?.[1]?.v;
       const cant = row.c?.[2]?.v;
       const tipo = row.c?.[3]?.v;
       const est  = row.c?.[4]?.v;
-      if(!cli) return;
+      // saltar header y solo mostrar entregados
+      if(!cli || cli==='CLIENTE') return;
+      if(est !== 'Entregado') return;
       totPiezas+=(cant||0);
       cliSet.add(cli);
-      const c=COLORS[i%COLORS.length];
-      const eColor=est==='Entregado'?'var(--gn)':est==='En progreso'?'var(--yw)':'var(--mu)';
+      const c=COLORS[ctCount%COLORS.length];
+      ctCount++;
       ctHTML+=`<div class="row-item">
         <div class="row-ico" style="background:${c}18;color:${c}">📦</div>
         <div class="row-info">
@@ -497,11 +508,11 @@ async function init(){
         </div>
         <div style="text-align:right;flex-shrink:0">
           <div class="row-amount" style="color:var(--tx)">${cant??'—'}</div>
-          <div style="font-size:9px;color:${eColor};font-weight:600;letter-spacing:.5px">${est||'—'}</div>
+          <div style="font-size:9px;color:var(--gn);font-weight:600;letter-spacing:.5px">✓ Entregado</div>
         </div>
       </div>`;
     });
-    document.getElementById('contenidos-list').innerHTML = ctHTML||'<div class="empty">Sin contenidos registrados</div>';
+    document.getElementById('contenidos-list').innerHTML = ctHTML||'<div class="empty">Sin contenidos entregados aún</div>';
     document.getElementById('tot-piezas').textContent    = totPiezas||'0';
     document.getElementById('tot-cli-con').textContent   = cliSet.size||'0';
 
