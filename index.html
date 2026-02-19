@@ -134,11 +134,38 @@ body{color:var(--tx);font-family:'Space Grotesk',sans-serif;max-width:430px;marg
 .fu{animation:fadeUp .3s cubic-bezier(.4,0,.2,1) both}
 .d1{animation-delay:.04s}.d2{animation-delay:.08s}.d3{animation-delay:.12s}
 .d4{animation-delay:.16s}.d5{animation-delay:.20s}.d6{animation-delay:.24s}
+
+/* LOGIN */
+#login-screen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center;padding:32px}
+.login-box{width:100%;max-width:320px;display:flex;flex-direction:column;align-items:center;gap:0}
+.login-logo{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:4px;color:var(--tx);margin-bottom:4px}
+.login-sub{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--mu2);margin-bottom:48px}
+.login-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--mu);margin-bottom:10px;align-self:flex-start}
+.login-input{width:100%;background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r);padding:14px 16px;font-family:'Space Grotesk',sans-serif;font-size:16px;color:var(--tx);letter-spacing:4px;outline:none;transition:border-color .2s;margin-bottom:12px}
+.login-input:focus{border-color:var(--or)}
+.login-input::placeholder{letter-spacing:1px;font-size:13px;color:var(--mu2)}
+.login-btn{width:100%;background:var(--or);border:none;border-radius:var(--r);padding:14px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:#fff;cursor:pointer;transition:opacity .15s;margin-bottom:12px}
+.login-btn:active{opacity:.8}
+.login-err{font-size:12px;color:var(--rd);text-align:center;min-height:18px;transition:opacity .2s}
+.login-err.hidden{opacity:0}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.shake{animation:shake .35s ease}
 </style>
 </head>
 <body>
 
-<div class="topbar">
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">POSTEOZ</div>
+    <div class="login-sub">Operating System</div>
+    <div class="login-label">Contraseña</div>
+    <input class="login-input" id="login-input" type="password" placeholder="Ingresa tu clave" autocomplete="current-password">
+    <button class="login-btn" onclick="checkLogin()">ENTRAR</button>
+    <div class="login-err hidden" id="login-err">Contraseña incorrecta</div>
+  </div>
+</div>
+
   <div class="logo-block">
     <div class="logo">POSTEOZ</div>
     <div class="logo-sub">Operating System</div>
@@ -489,7 +516,27 @@ async function init(){
   }
 }
 
-init();
+/* ── LOGIN ── */
+const PASS = 'posteoz2026'; // ← cambia esta contraseña
+
+function checkLogin(){
+  const val = document.getElementById('login-input').value;
+  if(val === PASS){
+    document.getElementById('login-screen').style.display = 'none';
+    init();
+  } else {
+    const box = document.getElementById('login-input');
+    const err = document.getElementById('login-err');
+    err.classList.remove('hidden');
+    box.classList.add('shake');
+    box.value = '';
+    setTimeout(()=>box.classList.remove('shake'), 400);
+  }
+}
+
+document.getElementById('login-input').addEventListener('keydown', e => {
+  if(e.key === 'Enter') checkLogin();
+});
 </script>
 </body>
 </html>
