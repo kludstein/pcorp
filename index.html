@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0A0A0A">
-<title>Posteoz — Operating System</title>
+<title>P Corp — Operating System</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -157,7 +157,7 @@ body{color:var(--tx);font-family:'Space Grotesk',sans-serif;max-width:430px;marg
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-box">
-    <div class="login-logo">POSTEOZ</div>
+    <div class="login-logo">P CORP</div>
     <div class="login-sub">Operating System</div>
     <div class="login-label">Contraseña</div>
     <input class="login-input" id="login-input" type="password" placeholder="Ingresa tu clave" autocomplete="current-password">
@@ -167,7 +167,7 @@ body{color:var(--tx);font-family:'Space Grotesk',sans-serif;max-width:430px;marg
 </div>
 
   <div class="logo-block">
-    <div class="logo">POSTEOZ</div>
+    <div class="logo">P CORP</div>
     <div class="logo-sub">Operating System</div>
   </div>
   <div class="topbar-r">
@@ -192,7 +192,7 @@ body{color:var(--tx);font-family:'Space Grotesk',sans-serif;max-width:430px;marg
       <div class="hero fu">
         <div class="hero-label">💼 Dinero en Caja</div>
         <div class="hero-amount" id="h-caja">—</div>
-        <div class="hero-sub">Saldo actual Posteoz</div>
+        <div class="hero-sub">Saldo actual P Corp</div>
         <div class="hero-tag">🔄 <span id="h-mrr-tag">MRR —</span></div>
         <div class="hero-badge">En vivo</div>
       </div>
@@ -230,7 +230,7 @@ body{color:var(--tx);font-family:'Space Grotesk',sans-serif;max-width:430px;marg
 
     <!-- INGRESOS -->
     <div class="view" id="v-ingresos">
-      <div class="sec">Ingresos Posteoz</div>
+      <div class="sec">Ingresos P Corp</div>
       <div class="card" id="ingresos-list"></div>
       <div class="total-strip">
         <label>Total ingresos</label>
@@ -369,10 +369,12 @@ async function init(){
 
     /* ── Clientes ── */
     const cl = await fetchSheet('Clientes');
-    let cliHTML='', cliListHTML='';
-    cl.slice(1).forEach((row,i)=>{
+    let cliHTML='', cliListHTML='', cliCount=0;
+    cl.forEach((row)=>{
       const nombre = row.c?.[0]?.v;
-      if(!nombre) return;
+      // saltar header y filas vacías
+      if(!nombre || nombre==='NOMBRE CLIENTE') return;
+      const i = cliCount++;
       const plan   = row.c?.[1]?.v||'—';
       const tarifa = row.c?.[2]?.v||0;
       const estado = row.c?.[4]?.v||'—';
