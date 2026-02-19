@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#0A0A0A">
+<title>Posteoz — Operating System</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:    #0A0A0A;
+  --s1:    #111111;
+  --s2:    #161616;
+  --s3:    #1C1C1C;
+  --bd:    #222222;
+  --bd2:   #2A2A2A;
+  --or:    #FF6B00;
+  --o12:   rgba(255,107,0,.12);
+  --o25:   rgba(255,107,0,.25);
+  --gn:    #22C55E;
+  --g10:   rgba(34,197,94,.10);
+  --rd:    #EF4444;
+  --r10:   rgba(239,68,68,.10);
+  --yw:    #F59E0B;
+  --tx:    #F0F0F0;
+  --mu:    #707070;
+  --mu2:   #404040;
+  --r:     14px;
+  --r2:    20px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{color:var(--tx);font-family:'Space Grotesk',sans-serif;max-width:430px;margin:0 auto;display:flex;flex-direction:column}
+
+.topbar{flex-shrink:0;padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-bottom:1px solid var(--bd);z-index:20}
+.logo-block{display:flex;flex-direction:column;gap:1px}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;line-height:1}
+.logo-sub{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--mu2)}
+.topbar-r{display:flex;align-items:center;gap:10px}
+.live{width:7px;height:7px;border-radius:50%;background:var(--gn);box-shadow:0 0 8px var(--gn);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+.tdate{font-size:11px;color:var(--mu)}
+
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:90px;-webkit-overflow-scrolling:touch}
+.scroll::-webkit-scrollbar{display:none}
+
+.view{display:none;padding:16px 16px 0}
+.view.active{display:block}
+
+#loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:14px;color:var(--mu);font-size:13px}
+.spin{width:30px;height:30px;border:2px solid var(--bd2);border-top-color:var(--or);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+#errbox{display:none;margin:20px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.3);border-radius:var(--r);padding:20px;font-size:13px;line-height:1.8}
+#errbox strong{color:var(--rd);display:block;margin-bottom:6px}
+#content{display:none}
+
+.sec{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--mu);margin:20px 0 10px}
+.sec:first-child{margin-top:4px}
+
+/* HERO */
+.hero{background:var(--s2);border:1px solid var(--bd2);border-radius:var(--r2);padding:24px 22px 22px;position:relative;overflow:hidden;margin-bottom:2px}
+.hero::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--or),transparent)}
+.hero-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--mu);margin-bottom:10px}
+.hero-amount{font-family:'Bebas Neue',sans-serif;font-size:54px;letter-spacing:2px;line-height:1;margin-bottom:4px}
+.hero-amount.pos{color:var(--tx)}
+.hero-amount.neg{color:var(--rd)}
+.hero-sub{font-size:12px;color:var(--mu);margin-bottom:16px}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;background:var(--o12);border:1px solid var(--o25);border-radius:99px;padding:4px 12px;font-size:11px;color:var(--or);font-weight:600}
+.hero-badge{position:absolute;top:18px;right:18px;background:var(--g10);border:1px solid rgba(34,197,94,.2);border-radius:99px;padding:3px 10px;font-size:9px;color:var(--gn);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+
+/* KPI */
+.kgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:2px}
+.kpi{background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);padding:16px 14px;transition:transform .12s}
+.kpi:active{transform:scale(.97)}
+.kpi-label{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.kpi-val{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;line-height:1}
+
+/* CARD */
+.card{background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden}
+
+/* ROW ITEM */
+.row-item{display:flex;align-items:center;padding:12px 14px;border-bottom:1px solid var(--bd);gap:12px}
+.row-item:last-child{border-bottom:none}
+.row-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.row-info{flex:1;min-width:0}
+.row-name{font-size:12px;font-weight:500}
+.row-sub{font-size:10px;color:var(--mu)}
+.row-amount{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.5px;flex-shrink:0}
+
+/* CLIENT CARD */
+.client-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cli-card{background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);padding:14px 12px}
+.cli-avatar{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px}
+.cli-name{font-size:13px;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cli-plan{font-size:10px;color:var(--mu);margin-bottom:8px}
+.cli-amount{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;margin-bottom:8px}
+.cli-status{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* TOTAL STRIP */
+.total-strip{display:flex;justify-content:space-between;align-items:center;background:var(--s3);border:1px solid var(--bd);border-radius:var(--r);padding:14px 16px;margin-top:10px}
+.total-strip label{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:1px}
+.total-strip span{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px}
+
+/* STAT STRIP */
+.stat-strip{display:grid;gap:1px;background:var(--bd);border-radius:var(--r);overflow:hidden;margin-top:10px}
+.cols2{grid-template-columns:1fr 1fr}
+.cols3{grid-template-columns:1fr 1fr 1fr}
+.stat-cell{background:var(--s2);padding:14px 10px;text-align:center}
+.stat-cell label{font-size:9px;color:var(--mu);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.stat-cell span{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.5px}
+
+/* TABS */
+.tab-row{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px}
+.tab-row::-webkit-scrollbar{display:none}
+.tab-btn{flex-shrink:0;padding:6px 14px;border-radius:99px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--bd);background:transparent;color:var(--mu);font-family:'Space Grotesk',sans-serif;transition:all .15s}
+.tab-btn.active{background:var(--or);border-color:var(--or);color:#fff}
+
+.empty{padding:24px;text-align:center;color:var(--mu);font-size:12px}
+
+/* NAV */
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--bg);border-top:1px solid var(--bd);display:flex;padding:10px 0 24px;z-index:100}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 0;transition:opacity .15s}
+.nb:active{opacity:.5}
+.nb-bar{width:20px;height:2px;border-radius:99px;background:transparent;transition:background .15s;margin-bottom:2px}
+.nb.active .nb-bar{background:var(--or)}
+.nb-ico{font-size:18px}
+.nb-lbl{font-size:9px;color:var(--mu);font-weight:500;letter-spacing:.5px;text-transform:uppercase}
+.nb.active .nb-lbl{color:var(--or)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.fu{animation:fadeUp .3s cubic-bezier(.4,0,.2,1) both}
+.d1{animation-delay:.04s}.d2{animation-delay:.08s}.d3{animation-delay:.12s}
+.d4{animation-delay:.16s}.d5{animation-delay:.20s}.d6{animation-delay:.24s}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo-block">
+    <div class="logo">POSTEOZ</div>
+    <div class="logo-sub">Operating System</div>
+  </div>
+  <div class="topbar-r">
+    <div class="tdate" id="fecha"></div>
+    <div class="live"></div>
+  </div>
+</div>
+
+<div class="scroll">
+  <div id="loading"><div class="spin"></div><span>Cargando datos...</span></div>
+  <div id="errbox">
+    <strong>⚠ Sin conexión al Sheet</strong>
+    Asegúrate que tu Google Sheet esté compartido públicamente:<br>
+    <em>Compartir → Cualquier persona con el enlace → Lector</em><br><br>
+    Luego recarga la página.
+  </div>
+
+  <div id="content">
+
+    <!-- HOME -->
+    <div class="view active" id="v-home">
+      <div class="hero fu">
+        <div class="hero-label">💼 Dinero en Caja</div>
+        <div class="hero-amount" id="h-caja">—</div>
+        <div class="hero-sub">Saldo actual Posteoz</div>
+        <div class="hero-tag">🔄 <span id="h-mrr-tag">MRR —</span></div>
+        <div class="hero-badge">En vivo</div>
+      </div>
+
+      <div class="sec fu d1">Indicadores clave</div>
+      <div class="kgrid fu d2">
+        <div class="kpi">
+          <div class="kpi-label">👥 Clientes activos</div>
+          <div class="kpi-val" style="color:var(--tx)" id="k-cli">—</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">💰 MRR</div>
+          <div class="kpi-val" style="color:var(--gn)" id="k-mrr">—</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">📈 Ingresos totales</div>
+          <div class="kpi-val" style="color:var(--gn)" id="k-ing">—</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">💸 Gastos del mes</div>
+          <div class="kpi-val" style="color:var(--rd)" id="k-gst">—</div>
+        </div>
+      </div>
+
+      <div class="sec fu d3">Clientes activos</div>
+      <div class="client-grid fu d4" id="client-grid"></div>
+
+      <div class="sec fu d5">Gastos empresa</div>
+      <div class="card fu d6" id="gastos-home"></div>
+      <div class="total-strip fu d6">
+        <label>Total gastos mes</label>
+        <span style="color:var(--rd)" id="tot-gst-home">—</span>
+      </div>
+    </div>
+
+    <!-- INGRESOS -->
+    <div class="view" id="v-ingresos">
+      <div class="sec">Ingresos Posteoz</div>
+      <div class="card" id="ingresos-list"></div>
+      <div class="total-strip">
+        <label>Total ingresos</label>
+        <span style="color:var(--gn)" id="tot-ing">—</span>
+      </div>
+
+      <div class="sec" style="margin-top:20px">Clientes y tarifas</div>
+      <div class="card" id="clientes-list"></div>
+    </div>
+
+    <!-- GASTOS -->
+    <div class="view" id="v-gastos">
+      <div class="sec">Gastos por mes</div>
+      <div class="tab-row" id="mes-tabs"></div>
+      <div class="card" id="gastos-list"></div>
+      <div class="total-strip">
+        <label>Total mes seleccionado</label>
+        <span style="color:var(--rd)" id="tot-gst-mes">—</span>
+      </div>
+    </div>
+
+    <!-- CONTENIDOS -->
+    <div class="view" id="v-contenidos">
+      <div class="sec">Contenidos entregados</div>
+      <div class="card" id="contenidos-list"></div>
+      <div class="stat-strip cols2">
+        <div class="stat-cell"><label>Total piezas</label><span style="color:var(--or)" id="tot-piezas">—</span></div>
+        <div class="stat-cell"><label>Clientes con contenido</label><span style="color:var(--tx)" id="tot-cli-con">—</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<nav class="bnav">
+  <div class="nb active" onclick="nav('home',this)">
+    <div class="nb-bar"></div><div class="nb-ico">⬡</div><div class="nb-lbl">Inicio</div>
+  </div>
+  <div class="nb" onclick="nav('ingresos',this)">
+    <div class="nb-bar"></div><div class="nb-ico">💰</div><div class="nb-lbl">Ingresos</div>
+  </div>
+  <div class="nb" onclick="nav('gastos',this)">
+    <div class="nb-bar"></div><div class="nb-ico">💳</div><div class="nb-lbl">Gastos</div>
+  </div>
+  <div class="nb" onclick="nav('contenidos',this)">
+    <div class="nb-bar"></div><div class="nb-ico">📦</div><div class="nb-lbl">Contenidos</div>
+  </div>
+</nav>
+
+<script>
+const SID = '19fIedRu-W45O3G85SEj6BKqB9JK60rlW-fZGK-psaC0';
+const HOY = new Date();
+const MES_ACTUAL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+  'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][HOY.getMonth()];
+const ORDEN_MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+  'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const COLORS = ['#FF6B00','#22C55E','#F59E0B','#3B82F6','#A855F7','#EC4899'];
+const EICO = {'Contador':'🧾','Oficina Virtual':'🏢','Google Workspace':'📧',
+  'ChatGPT Go':'🤖','Canva':'🎨','MacBook Pro':'💻','Adobe':'🖌️','Figma':'✏️','Notion':'📝'};
+
+document.getElementById('fecha').textContent =
+  HOY.toLocaleDateString('es-CL',{day:'numeric',month:'short',year:'numeric'});
+
+const fmt = n => (n==null||isNaN(n)) ? '—' :
+  (n<0?'-':'')+'$'+Math.abs(Math.round(n)).toLocaleString('es-CL');
+
+const fmtS = n => {
+  if(n==null||isNaN(n)) return '—';
+  const s=n<0?'-':'', a=Math.abs(n);
+  if(a>=1e6) return s+'$'+(a/1e6).toFixed(1)+'M';
+  if(a>=1e3) return s+'$'+Math.round(a/1e3)+'K';
+  return s+'$'+Math.round(a).toLocaleString('es-CL');
+};
+
+async function fetchSheet(name){
+  const url = `https://docs.google.com/spreadsheets/d/${SID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name)}`;
+  const res = await fetch(url);
+  const txt = await res.text();
+  const json = JSON.parse(txt.match(/setResponse\(([\s\S]*)\)/)[1]);
+  return json.table.rows;
+}
+
+function nav(id, el){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('v-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+let gastosMap = {};
+
+function renderGastosMes(mes){
+  const items = gastosMap[mes]||[];
+  const total = items.reduce((s,i)=>s+i.monto,0);
+  let h='';
+  items.forEach((item,i)=>{
+    const c=COLORS[i%COLORS.length];
+    h+=`<div class="row-item">
+      <div class="row-ico" style="background:${c}18;color:${c}">${EICO[item.cat]||'💼'}</div>
+      <div class="row-info"><div class="row-name">${item.cat}</div><div class="row-sub">${mes} · Empresa</div></div>
+      <div class="row-amount" style="color:var(--rd)">${fmt(item.monto)}</div>
+    </div>`;
+  });
+  document.getElementById('gastos-list').innerHTML = h||'<div class="empty">Sin gastos registrados</div>';
+  document.getElementById('tot-gst-mes').textContent = fmtS(total);
+}
+
+async function init(){
+  try {
+
+    /* ── Dashboard Posteoz ── */
+    const dp = await fetchSheet('Dashboard Posteoz');
+
+    const getKPI = kw => {
+      const row = dp.find(r=>String(r?.c?.[0]?.v||'').toLowerCase().includes(kw.toLowerCase()));
+      return row?.c?.[1]?.v??null;
+    };
+
+    const caja    = getKPI('caja');
+    const clientes = getKPI('clientes activos');
+    const mrr     = getKPI('mrr');
+    const ingTot  = getKPI('ingresos totales');
+    const gstTot  = getKPI('gastos totales');
+
+    // Hero
+    const cajaEl = document.getElementById('h-caja');
+    cajaEl.textContent = fmt(caja);
+    cajaEl.className   = 'hero-amount '+(caja>=0?'pos':'neg');
+    document.getElementById('h-mrr-tag').textContent = 'MRR '+fmtS(mrr)+' / mes';
+
+    // KPIs
+    document.getElementById('k-cli').textContent = clientes??'0';
+    document.getElementById('k-mrr').textContent = fmtS(mrr);
+    document.getElementById('k-ing').textContent = fmtS(ingTot);
+    document.getElementById('k-gst').textContent = fmtS(gstTot);
+
+    /* ── Clientes ── */
+    const cl = await fetchSheet('Clientes');
+    let cliHTML='', cliListHTML='';
+    cl.slice(1).forEach((row,i)=>{
+      const nombre = row.c?.[0]?.v;
+      if(!nombre) return;
+      const plan   = row.c?.[1]?.v||'—';
+      const tarifa = row.c?.[2]?.v||0;
+      const estado = row.c?.[4]?.v||'—';
+      const c = COLORS[i%COLORS.length];
+      const isActivo  = estado==='Activo';
+      const isPending = estado==='Por cobrar';
+      const sColor = isActivo?'var(--gn)':isPending?'var(--yw)':'var(--mu)';
+      const dotStyle = isActivo?`background:var(--gn);box-shadow:0 0 6px var(--gn)`:`background:var(--mu)`;
+
+      cliHTML+=`<div class="cli-card">
+        <div class="cli-avatar" style="background:${c}18;color:${c}">👤</div>
+        <div class="cli-name">${nombre}</div>
+        <div class="cli-plan" style="color:${c}">${plan}</div>
+        <div class="cli-amount" style="color:var(--tx)">${fmt(tarifa)}</div>
+        <div class="cli-status">
+          <div class="sdot" style="${dotStyle}"></div>
+          <span style="color:${sColor}">${estado}</span>
+        </div>
+      </div>`;
+
+      cliListHTML+=`<div class="row-item">
+        <div class="row-ico" style="background:${c}18;color:${c}">👤</div>
+        <div class="row-info"><div class="row-name">${nombre}</div><div class="row-sub">${plan}</div></div>
+        <div class="row-amount" style="color:var(--gn)">${fmt(tarifa)}<span style="font-size:9px;color:var(--mu);font-family:'Space Grotesk'">/mes</span></div>
+      </div>`;
+    });
+    document.getElementById('client-grid').innerHTML   = cliHTML    ||'<div class="empty">Sin clientes registrados</div>';
+    document.getElementById('clientes-list').innerHTML = cliListHTML||'<div class="empty">Sin clientes</div>';
+
+    /* ── Gastos Posteoz ── */
+    const gp = await fetchSheet('Gastos Posteoz');
+    gp.slice(1).forEach(row=>{
+      const mes=row.c?.[1]?.v, cat=row.c?.[2]?.v, mto=row.c?.[3]?.v;
+      if(mes&&cat&&mto){
+        if(!gastosMap[mes]) gastosMap[mes]=[];
+        gastosMap[mes].push({cat,monto:mto});
+      }
+    });
+
+    // Tabs gastos
+    const mesesGastos = Object.keys(gastosMap)
+      .sort((a,b)=>ORDEN_MESES.indexOf(a)-ORDEN_MESES.indexOf(b));
+    const mesTabsEl = document.getElementById('mes-tabs');
+    let primerMes = null;
+    mesesGastos.forEach((mes,i)=>{
+      const t=document.createElement('div');
+      t.className='tab-btn'+(i===0?' active':'');
+      t.textContent=mes;
+      t.onclick=function(){
+        mesTabsEl.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+        this.classList.add('active');
+        renderGastosMes(mes);
+      };
+      mesTabsEl.appendChild(t);
+      if(i===0) primerMes=mes;
+    });
+    if(primerMes) renderGastosMes(primerMes);
+
+    // Gastos en home (mes actual o primero disponible)
+    const mesHome = gastosMap[MES_ACTUAL] ? MES_ACTUAL : primerMes;
+    const ghItems = gastosMap[mesHome]||[];
+    const totGH   = ghItems.reduce((s,i)=>s+i.monto,0);
+    let ghHTML='';
+    ghItems.forEach((item,i)=>{
+      const c=COLORS[i%COLORS.length];
+      ghHTML+=`<div class="row-item">
+        <div class="row-ico" style="background:${c}18;color:${c}">${EICO[item.cat]||'💼'}</div>
+        <div class="row-info"><div class="row-name">${item.cat}</div><div class="row-sub">${mesHome} · Empresa</div></div>
+        <div class="row-amount" style="color:var(--rd)">${fmt(item.monto)}</div>
+      </div>`;
+    });
+    document.getElementById('gastos-home').innerHTML      = ghHTML||'<div class="empty">Sin gastos</div>';
+    document.getElementById('tot-gst-home').textContent   = fmtS(totGH);
+
+    /* ── Ingresos Posteoz ── */
+    const ip = await fetchSheet('Ingresos Posteoz');
+    let ingHTML='', totIngVal=0;
+    ip.slice(1).forEach((row,i)=>{
+      const rawFecha = row.c?.[0]?.v;
+      const mes  = row.c?.[1]?.v;
+      const cli  = row.c?.[2]?.v;
+      const mto  = row.c?.[3]?.v;
+      const conc = row.c?.[4]?.v;
+      if(!cli&&!mto) return;
+      totIngVal+=(mto||0);
+      const c=COLORS[i%COLORS.length];
+      let fechaStr='—';
+      if(rawFecha){
+        try{ fechaStr=new Date(rawFecha).toLocaleDateString('es-CL',{day:'numeric',month:'short'}); }catch(e){}
+      } else if(mes){ fechaStr=mes; }
+      ingHTML+=`<div class="row-item">
+        <div class="row-ico" style="background:${c}18;color:${c}">💰</div>
+        <div class="row-info">
+          <div class="row-name">${cli||'—'}</div>
+          <div class="row-sub">${fechaStr}${conc?' · '+conc:''}</div>
+        </div>
+        <div class="row-amount" style="color:var(--gn)">${fmt(mto)}</div>
+      </div>`;
+    });
+    document.getElementById('ingresos-list').innerHTML = ingHTML||'<div class="empty">Sin ingresos registrados</div>';
+    document.getElementById('tot-ing').textContent     = fmtS(totIngVal);
+
+    /* ── Contenidos ── */
+    const ct = await fetchSheet('Contenidos');
+    let ctHTML='', totPiezas=0; const cliSet=new Set();
+    ct.slice(1).forEach((row,i)=>{
+      const cli  = row.c?.[0]?.v;
+      const mes  = row.c?.[1]?.v;
+      const cant = row.c?.[2]?.v;
+      const tipo = row.c?.[3]?.v;
+      const est  = row.c?.[4]?.v;
+      if(!cli) return;
+      totPiezas+=(cant||0);
+      cliSet.add(cli);
+      const c=COLORS[i%COLORS.length];
+      const eColor=est==='Entregado'?'var(--gn)':est==='En progreso'?'var(--yw)':'var(--mu)';
+      ctHTML+=`<div class="row-item">
+        <div class="row-ico" style="background:${c}18;color:${c}">📦</div>
+        <div class="row-info">
+          <div class="row-name">${cli}</div>
+          <div class="row-sub">${mes||'—'} · ${tipo||'—'}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div class="row-amount" style="color:var(--tx)">${cant??'—'}</div>
+          <div style="font-size:9px;color:${eColor};font-weight:600;letter-spacing:.5px">${est||'—'}</div>
+        </div>
+      </div>`;
+    });
+    document.getElementById('contenidos-list').innerHTML = ctHTML||'<div class="empty">Sin contenidos registrados</div>';
+    document.getElementById('tot-piezas').textContent    = totPiezas||'0';
+    document.getElementById('tot-cli-con').textContent   = cliSet.size||'0';
+
+    /* Show */
+    document.getElementById('loading').style.display='none';
+    document.getElementById('content').style.display='block';
+
+  } catch(err){
+    console.error(err);
+    document.getElementById('loading').style.display='none';
+    document.getElementById('errbox').style.display ='block';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
